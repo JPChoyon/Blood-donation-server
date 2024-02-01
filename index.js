@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -25,7 +25,8 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
-    const requestCollection = client.db("bloodDonation").collection("request");
+    const requestCollection = client.db("bloodDonation").collection("request")
+ 
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -48,19 +49,53 @@ async function run() {
     });
 
     /*==================== user related api ============================*/
+
     app.post("/posts", async (req, res) => {
-      const users = req.body;
+      const posts = req.body;
       const result = await postCollection.insertOne(posts);
       res.send(result);
     });
 
-    // get all post from database
     app.get("/posts", async (req, res) => {
-      const result = await postCollection.find().toArray();
+      const posts = await postCollection.find().toArray();
+      res.send(posts);
+    });
+
+
+    app.get("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const cursor = await postCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      res.send(cursor);
+    });
+
+    app.put("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatePost = req.body;
+      console.log(updatePost);
+      const post = {
+        $set: {
+          likes: updatePost.newLikes,
+        },
+      };
+      const result = await postCollection.updateOne(filter, post, options);
+      console.log(result);
+      console.log("its", updatePost.likes);
       res.send(result);
     });
 
-    // await client.db("admin").command({ ping: 1 });
+    app.delete("/posts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    await client.db("admin").command({ ping: 1 });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
