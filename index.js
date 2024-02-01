@@ -6,7 +6,14 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://blood-donation-binary-avengers.vercel.app",
+    ],
+  })
+);
 app.use(express.json());
 
 // mongodb connection
@@ -25,8 +32,7 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
-    const requestCollection = client.db("bloodDonation").collection("request")
- 
+    const requestCollection = client.db("bloodDonation").collection("request");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -39,8 +45,6 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
-
-    
 
     // get all user from database
     app.get("/users", async (req, res) => {
@@ -60,7 +64,6 @@ async function run() {
       const posts = await postCollection.find().toArray();
       res.send(posts);
     });
-
 
     app.get("/posts/:id", async (req, res) => {
       const id = req.params.id;
