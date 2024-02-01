@@ -51,9 +51,14 @@ async function run() {
     /*==================== user related api ============================*/
 
     app.post("/posts", async (req, res) => {
-      const users = req.body;
+      const posts = req.body;
       const result = await postCollection.insertOne(posts);
       res.send(result);
+    });
+
+    app.get("/posts", async (req, res) => {
+      const posts = await postCollection.find().toArray();
+      res.send(posts);
     });
 
 
