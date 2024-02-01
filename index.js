@@ -39,6 +39,8 @@ async function run() {
       res.send(result);
     });
 
+    
+
     // get all user from database
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
