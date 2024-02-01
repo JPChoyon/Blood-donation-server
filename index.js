@@ -25,7 +25,22 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
-    const requestCollection = client.db("bloodDonation").collection("request");
+    const requestCollection = client.db("bloodDonation").collection("request")
+ 
+
+    /*==================== user related api ============================*/
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const exitingUser = await userCollection.findOne(query);
+      if (exitingUser) {
+        return res.send({ message: "user already exists" });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    
 
     // get all user from database
     app.get("/users", async (req, res) => {
@@ -33,22 +48,14 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/users", async (req, res) => {
-      const users = req.body;
-      const result = await userCollection.insertOne(users);
-      res.send(result);
-    });
-    // get all post from database
-    app.get("/posts", async (req, res) => {
-      const result = await postCollection.find().toArray();
-      res.send(result);
-    });
+    /*==================== user related api ============================*/
 
     app.post("/posts", async (req, res) => {
       const users = req.body;
-      const result = await postCollection.insertOne(users);
+      const result = await postCollection.insertOne(posts);
       res.send(result);
     });
+
 
     app.get("/posts/:id", async (req, res) => {
       const id = req.params.id;
@@ -83,6 +90,7 @@ async function run() {
     });
 
     await client.db("admin").command({ ping: 1 });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -94,7 +102,7 @@ run().catch(console.dir);
 
 // server runnig
 app.get("/", (req, res) => {
-  res.send("user mangement is on");
+  res.send("Blood Donation servier is running");
 });
 app.listen(port, () => {
   console.log("server runnig at port", port);
