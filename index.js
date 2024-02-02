@@ -52,6 +52,13 @@ async function run() {
       res.send(result);
     });
 
+    /*  single user */
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+
     // delete user from database
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
@@ -59,7 +66,6 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
-
 
     /*==================== Post related api ============================*/
 
