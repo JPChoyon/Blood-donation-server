@@ -52,7 +52,16 @@ async function run() {
       res.send(result);
     });
 
-    /*==================== user related api ============================*/
+    // delete user from database
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+    /*==================== Post related api ============================*/
 
     app.post("/posts", async (req, res) => {
       const posts = req.body;
