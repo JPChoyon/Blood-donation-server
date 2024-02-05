@@ -6,7 +6,14 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://blood-donation-binary-avengers.vercel.app",
+    ],
+  })
+);
 app.use(express.json());
 
 // mongodb connection
@@ -25,8 +32,7 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
-    const requestCollection = client.db("bloodDonation").collection("request")
- 
+    const requestCollection = client.db("bloodDonation").collection("request");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -39,6 +45,7 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
 
       // request related api---============
       app.post("/request", async (req, res) => {
@@ -55,13 +62,29 @@ async function run() {
 
     
 
+
     // get all user from database
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    /*==================== user related api ============================*/
+    /*  single user */
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+
+    // delete user from database
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*==================== Post related api ============================*/
 
     app.post("/posts", async (req, res) => {
       const posts = req.body;
@@ -73,7 +96,6 @@ async function run() {
       const posts = await postCollection.find().toArray();
       res.send(posts);
     });
-
 
     app.get("/posts/:id", async (req, res) => {
       const id = req.params.id;
