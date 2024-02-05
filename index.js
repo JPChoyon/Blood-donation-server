@@ -40,6 +40,19 @@ async function run() {
       res.send(result);
     });
 
+      // request related api---============
+      app.post("/request", async (req, res) => {
+        const user = req.body;
+        const result = await requestCollection.insertOne(user);
+        res.send(result);
+      });
+  
+      app.get("/request", async (req, res) => {
+        const result = await requestCollection.find().toArray();
+        res.send(result);
+      });
+  
+
     
 
     // get all user from database
