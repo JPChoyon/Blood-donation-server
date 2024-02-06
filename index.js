@@ -33,6 +33,7 @@ async function run() {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
+    const commentCollection = client.db("bloodDonation").collection("comments");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -46,7 +47,6 @@ async function run() {
       res.send(result);
     });
 
-
       // request related api---============
       app.post("/request", async (req, res) => {
         const user = req.body;
@@ -59,10 +59,6 @@ async function run() {
         res.send(result);
       });
   
-
-    
-
-
     // get all user from database
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -126,6 +122,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await postCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*==================== comment related api ============================*/
+
+    app.post("/comments", async (req, res) => {
+      const comments = req.body;
+      const result = await commentCollection.insertOne(comments);
+      res.send(result);
+    });
+
+    app.get("/comments", async (req, res) => {
+      const comments = await commentCollection.find().toArray();
+      res.send(comments);
+    });
+
+    app.get("/comments/:commentID", async (req, res) => {
+      const commentID = req.params.commentID;
+      const cursor = commentCollection.find({ commentID: commentID });
+      const result = await cursor.toArray();
       res.send(result);
     });
 
