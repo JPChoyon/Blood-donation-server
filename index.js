@@ -6,7 +6,14 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://blood-donation-binary-avengers.vercel.app",
+    ],
+  })
+);
 app.use(express.json());
 
 // mongodb connection
@@ -25,8 +32,8 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
-    const requestCollection = client.db("bloodDonation").collection("request")
- 
+    const requestCollection = client.db("bloodDonation").collection("request");
+    const commentCollection = client.db("bloodDonation").collection("comments");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -40,22 +47,39 @@ async function run() {
       res.send(result);
     });
 
-    
-
     // get all user from database
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    /*==================== user related api ============================*/
+    /*  single user */
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+
+    // delete user from database
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*==================== Post related api ============================*/
 
     app.post("/posts", async (req, res) => {
-      const users = req.body;
+      const posts = req.body;
       const result = await postCollection.insertOne(posts);
       res.send(result);
     });
 
+    app.get("/posts", async (req, res) => {
+      const posts = await postCollection.find().toArray();
+      res.send(posts);
+    });
 
     app.get("/posts/:id", async (req, res) => {
       const id = req.params.id;
@@ -86,6 +110,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await postCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*==================== comment related api ============================*/
+
+    app.post("/comments", async (req, res) => {
+      const comments = req.body;
+      const result = await commentCollection.insertOne(comments);
+      res.send(result);
+    });
+
+    app.get("/comments", async (req, res) => {
+      const comments = await commentCollection.find().toArray();
+      res.send(comments);
+    });
+
+    app.get("/comments/:commentID", async (req, res) => {
+      const commentID = req.params.commentID;
+      const cursor = commentCollection.find({ commentID: commentID });
+      const result = await cursor.toArray();
       res.send(result);
     });
 
