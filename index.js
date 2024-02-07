@@ -47,18 +47,6 @@ async function run() {
       res.send(result);
     });
 
-      // request related api---============
-      app.post("/request", async (req, res) => {
-        const user = req.body;
-        const result = await requestCollection.insertOne(user);
-        res.send(result);
-      });
-  
-      app.get("/request", async (req, res) => {
-        const result = await requestCollection.find().toArray();
-        res.send(result);
-      });
-  
     // get all user from database
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -79,6 +67,41 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
+
+    /*==================== user related api ============================*/
+
+    /*related post api api*/
+    app.post("/requests", async (req, res) => {
+      const user = req.body;
+      const result = await requestCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/requests", async (req, res) => {
+      const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+
+    /*  delete request from database */
+    app.delete("/requests/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await requestCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /* delete all requests from database */
+    app.delete("/requests-all", async (req, res) => {
+      try {
+        const result = await requestCollection.deleteMany({});
+        res.send(result);
+      } catch (error) {
+        console.error("Error deleting requests:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    /*==================== Post related api ============================*/
 
     /*==================== Post related api ============================*/
 
