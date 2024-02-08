@@ -87,6 +87,7 @@ async function run() {
       res.send(result);
     });
 
+
     app.delete("/user-all", async (req, res) => {
       try {
         const result = await userCollection.deleteMany({});
@@ -98,6 +99,9 @@ async function run() {
     });
 
     /*==================== user related api ============================*/
+
+    /*==================== requests related api ============================*/
+
 
     /*related post api api*/
     app.post("/requests", async (req, res) => {
@@ -120,9 +124,9 @@ async function run() {
     });
 
     /* delete all requests from database */
-    app.delete("/requests-all", async (req, res) => {
+    app.delete("/comments-all", async (req, res) => {
       try {
-        const result = await requestCollection.deleteMany({});
+        const result = await commentCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -130,7 +134,6 @@ async function run() {
       }
     });
 
-    /*==================== Post related api ============================*/
 
     /*==================== Post related api ============================*/
 
@@ -177,7 +180,7 @@ async function run() {
       res.send(result);
     });
 
-    /*==================== comment related api ============================*/
+    /*==================== comments related api ============================*/
 
     app.post("/comments", async (req, res) => {
       const comments = req.body;
