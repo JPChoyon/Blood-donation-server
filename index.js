@@ -60,12 +60,41 @@ async function run() {
       res.send(result);
     });
 
+    // user update api
+    app.put("/users/:_id", async (req, res) => {
+      const id = req.params._id;
+      const user = req.body;
+      const filter = {_id:  new ObjectId(id) };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: {
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          address: user.address,
+          blood: user.blood,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateUser, options);
+      res.send(result);
+    });
+
     // delete user from database
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
       res.send(result);
+    });
+
+    app.delete("/user-all", async (req, res) => {
+      try {
+        const result = await userCollection.deleteMany({});
+        res.send(result);
+      } catch (error) {
+        console.error("Error deleting requests:", error);
+        res.status(500).send("Internal Server Error");
+      }
     });
 
     /*==================== user related api ============================*/
