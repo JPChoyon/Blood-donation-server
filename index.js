@@ -33,6 +33,7 @@ async function run() {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
+    const commentCollection = client.db("bloodDonation").collection("comments");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -59,6 +60,25 @@ async function run() {
       res.send(result);
     });
 
+    // user update api
+    app.put("/users/:_id", async (req, res) => {
+      const id = req.params._id;
+      const user = req.body;
+      const filter = {_id:  new ObjectId(id) };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: {
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          address: user.address,
+          blood: user.blood,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateUser, options);
+      res.send(result);
+    });
+
     // delete user from database
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
@@ -66,6 +86,54 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
+
+
+    app.delete("/user-all", async (req, res) => {
+      try {
+        const result = await userCollection.deleteMany({});
+        res.send(result);
+      } catch (error) {
+        console.error("Error deleting requests:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    /*==================== user related api ============================*/
+
+    /*==================== requests related api ============================*/
+
+
+    /*related post api api*/
+    app.post("/requests", async (req, res) => {
+      const user = req.body;
+      const result = await requestCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/requests", async (req, res) => {
+      const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+
+    /*  delete request from database */
+    app.delete("/requests/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await requestCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /* delete all requests from database */
+    app.delete("/comments-all", async (req, res) => {
+      try {
+        const result = await commentCollection.deleteMany({});
+        res.send(result);
+      } catch (error) {
+        console.error("Error deleting requests:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
 
     /*==================== Post related api ============================*/
 
@@ -109,6 +177,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await postCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*==================== comments related api ============================*/
+
+    app.post("/comments", async (req, res) => {
+      const comments = req.body;
+      const result = await commentCollection.insertOne(comments);
+      res.send(result);
+    });
+
+    app.get("/comments", async (req, res) => {
+      const comments = await commentCollection.find().toArray();
+      res.send(comments);
+    });
+
+    app.get("/comments/:commentID", async (req, res) => {
+      const commentID = req.params.commentID;
+      const cursor = commentCollection.find({ commentID: commentID });
+      const result = await cursor.toArray();
       res.send(result);
     });
 
