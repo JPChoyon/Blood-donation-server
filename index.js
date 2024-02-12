@@ -34,6 +34,7 @@ async function run() {
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
+    const campaignCollection = client.db("bloodDonation").collection("campaign");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -199,6 +200,21 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+
+    /*================== campaign related api ++++++++++++++++++++++++++++++++*/ 
+
+    app.post("/campaign", async (req, res) => {
+      const campaign = req.body;
+      const result = await campaignCollection.insertOne(campaign);
+      res.send(result);
+    });
+
+    app.get("/campaign", async (req, res) => {
+      const campaign = await campaignCollection.find().toArray();
+      res.send(campaign);
+    });
+
 
     await client.db("admin").command({ ping: 1 });
 
