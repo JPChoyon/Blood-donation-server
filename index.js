@@ -34,6 +34,9 @@ async function run() {
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
+    const campaignCollection = client
+      .db("bloodDonation")
+      .collection("campaign");
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -64,7 +67,7 @@ async function run() {
     app.put("/users/:_id", async (req, res) => {
       const id = req.params._id;
       const user = req.body;
-      const filter = {_id:  new ObjectId(id) };
+      const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateUser = {
         $set: {
@@ -75,7 +78,11 @@ async function run() {
           blood: user.blood,
         },
       };
-      const result = await userCollection.updateOne(filter, updateUser, options);
+      const result = await userCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
       res.send(result);
     });
 
@@ -86,7 +93,6 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
-
 
     app.delete("/user-all", async (req, res) => {
       try {
@@ -101,7 +107,6 @@ async function run() {
     /*==================== user related api ============================*/
 
     /*==================== requests related api ============================*/
-
 
     /*related post api api*/
     app.post("/requests", async (req, res) => {
@@ -133,7 +138,6 @@ async function run() {
         res.status(500).send("Internal Server Error");
       }
     });
-
 
     /*==================== Post related api ============================*/
 
@@ -197,6 +201,27 @@ async function run() {
       const commentID = req.params.commentID;
       const cursor = commentCollection.find({ commentID: commentID });
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    /*================== campaign related api ++++++++++++++++++++++++++++++++*/
+
+    app.post("/campaign", async (req, res) => {
+      const campaign = req.body;
+      const result = await campaignCollection.insertOne(campaign);
+      res.send(result);
+    });
+
+    app.get("/campaign", async (req, res) => {
+      const campaign = await campaignCollection.find().toArray();
+      res.send(campaign);
+    });
+
+    app.get("/campaign/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id, "jhsdfhsdfhsuifh")
+      const cursor = { _id: new ObjectId(id) };
+      const result = await campaignCollection.findOne(cursor);
       res.send(result);
     });
 
