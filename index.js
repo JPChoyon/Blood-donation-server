@@ -1,6 +1,8 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -34,7 +36,23 @@ async function run() {
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
-    const campaignCollection = client.db("bloodDonation").collection("campaign");
+    const campaignCollection = client
+      .db("bloodDonation")
+      .collection("campaign");
+
+    /*==================== Socket.IO setup ============================*/
+    const server = http.createServer(app);
+    const io = socketIO(server);
+
+    io.on("connection", (socketIO) => {
+      console.log("socket connection..");
+
+
+
+      socketIO.on('disconnect', () =>{
+        console.log(' socket disconnect');
+      })
+    });
 
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -56,7 +74,7 @@ async function run() {
 
     /*  single user */
     app.get("/users/:email", async (req, res) => {
-      const email = req.params.email;
+      const email = req.query.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
@@ -65,7 +83,7 @@ async function run() {
     app.put("/users/:_id", async (req, res) => {
       const id = req.params._id;
       const user = req.body;
-      const filter = {_id:  new ObjectId(id) };
+      const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateUser = {
         $set: {
@@ -76,7 +94,11 @@ async function run() {
           blood: user.blood,
         },
       };
-      const result = await userCollection.updateOne(filter, updateUser, options);
+      const result = await userCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
       res.send(result);
     });
 
@@ -87,7 +109,6 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
-
 
     app.delete("/user-all", async (req, res) => {
       try {
@@ -102,7 +123,6 @@ async function run() {
     /*==================== user related api ============================*/
 
     /*==================== requests related api ============================*/
-
 
     /*related post api api*/
     app.post("/requests", async (req, res) => {
@@ -125,16 +145,15 @@ async function run() {
     });
 
     /* delete all requests from database */
-    app.delete("/comments-all", async (req, res) => {
+    app.delete("/requests-all", async (req, res) => {
       try {
-        const result = await commentCollection.deleteMany({});
+        const result = await requestCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
         res.status(500).send("Internal Server Error");
       }
     });
-
 
     /*==================== Post related api ============================*/
 
@@ -201,8 +220,7 @@ async function run() {
       res.send(result);
     });
 
-
-    /*================== campaign related api ++++++++++++++++++++++++++++++++*/ 
+    /*================== campaign related api ++++++++++++++++++++++++++++++++*/
 
     app.post("/campaign", async (req, res) => {
       const campaign = req.body;
@@ -215,6 +233,10 @@ async function run() {
       res.send(campaign);
     });
 
+    /*==================== Socket server ============================*/
+    io.on("connection", (socket) => {
+      console.log("socket connection..");
+    });
 
     await client.db("admin").command({ ping: 1 });
 
