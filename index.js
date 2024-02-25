@@ -228,36 +228,33 @@ async function run() {
     });
 
     // payment related api
-    app.post("/payments", async (req, res) => {
-      const payment = req.body;
-      const result = await paymentCollection.insertOne(payment);
-      res.send(result);
-    });
-    app.post("/payment-intened", async (req, res) => {
-      const { price } = req.body;
-      const amount = price * 100;
+    // app.post("/payments", async (req, res) => {
+    //   const payment = req.body;
+    //   const result = await paymentCollection.insertOne(payment);
+    //   res.send(result);
+    // });
+    // app.post("/payment-intened", async (req, res) => {
+    //   const { price } = req.body;
+    //   const amount = parseInt(price * 100);
 
-      // Create a PaymentIntent with the order amount and currency
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: "usd",
-        payment_method_types: [
-          "card",
-        ], 
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     amount: amount,
+    //     currency: "usd",
+    //     payment_method_types: [
+    //       "card",
+    //     ], 
+    //   });
 
-      res.send({
-        clientSecret: paymentIntent.client_secret,
-      });
-    });
+    //   res.send({
+    //     clientSecret: paymentIntent.client_secret,
+    //   });
 
-    app.get("/payments", async (req, res) => {
-      const payment = await paymentCollection.find().toArray();
-      res.send(payment);
-    });
+    // });
+
+    // app.get("/payment-intened", async (req, res) => {
+    //   const payment = await paymentCollection.find().toArray();
+    //   res.send(payment);
+    // });
 
     await client.db("admin").command({ ping: 1 });
 
