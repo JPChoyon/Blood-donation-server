@@ -40,6 +40,7 @@ async function run() {
       .db("bloodDonation")
       .collection("campaign");
 
+
     /*==================== Socket.IO setup ============================*/
     const server = http.createServer(app);
     const io = socketIO(server);
@@ -47,13 +48,10 @@ async function run() {
     io.on("connection", (socketIO) => {
       console.log("socket connection..");
 
-
-
       socketIO.on('disconnect', () =>{
         console.log(' socket disconnect');
       })
     });
-
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -233,9 +231,18 @@ async function run() {
       res.send(campaign);
     });
 
+
     /*==================== Socket server ============================*/
     io.on("connection", (socket) => {
       console.log("socket connection..");
+
+    app.get("/campaign/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id, "jhsdfhsdfhsuifh")
+      const cursor = { _id: new ObjectId(id) };
+      const result = await campaignCollection.findOne(cursor);
+      res.send(result);
+
     });
 
     await client.db("admin").command({ ping: 1 });
