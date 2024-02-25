@@ -1,6 +1,8 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -38,6 +40,18 @@ async function run() {
       .db("bloodDonation")
       .collection("campaign");
 
+
+    /*==================== Socket.IO setup ============================*/
+    const server = http.createServer(app);
+    const io = socketIO(server);
+
+    io.on("connection", (socketIO) => {
+      console.log("socket connection..");
+
+      socketIO.on('disconnect', () =>{
+        console.log(' socket disconnect');
+      })
+    });
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -58,7 +72,7 @@ async function run() {
 
     /*  single user */
     app.get("/users/:email", async (req, res) => {
-      const email = req.params.email;
+      const email = req.query.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
@@ -129,9 +143,9 @@ async function run() {
     });
 
     /* delete all requests from database */
-    app.delete("/comments-all", async (req, res) => {
+    app.delete("/requests-all", async (req, res) => {
       try {
-        const result = await commentCollection.deleteMany({});
+        const result = await requestCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -217,12 +231,18 @@ async function run() {
       res.send(campaign);
     });
 
+
+    /*==================== Socket server ============================*/
+    io.on("connection", (socket) => {
+      console.log("socket connection..");
+
     app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id, "jhsdfhsdfhsuifh")
       const cursor = { _id: new ObjectId(id) };
       const result = await campaignCollection.findOne(cursor);
       res.send(result);
+
     });
 
     await client.db("admin").command({ ping: 1 });
