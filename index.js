@@ -6,6 +6,7 @@ const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.SECRET_KEY)
 
 // middleware
 app.use(
@@ -36,6 +37,7 @@ async function run() {
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
+    const paymentCollection = client.db("bloodDonation").collection("payments");
     const campaignCollection = client
       .db("bloodDonation")
       .collection("campaign");
@@ -232,9 +234,7 @@ async function run() {
     });
 
 
-    /*==================== Socket server ============================*/
-    io.on("connection", (socket) => {
-      console.log("socket connection..");
+ 
 
     app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
@@ -244,6 +244,35 @@ async function run() {
       res.send(result);
 
     });
+
+    // payment related api
+    // app.post("/payments", async (req, res) => {
+    //   const payment = req.body;
+    //   const result = await paymentCollection.insertOne(payment);
+    //   res.send(result);
+    // });
+    // app.post("/payment-intened", async (req, res) => {
+    //   const { price } = req.body;
+    //   const amount = parseInt(price * 100);
+
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     amount: amount,
+    //     currency: "usd",
+    //     payment_method_types: [
+    //       "card",
+    //     ], 
+    //   });
+
+    //   res.send({
+    //     clientSecret: paymentIntent.client_secret,
+    //   });
+
+    // });
+
+    // app.get("/payment-intened", async (req, res) => {
+    //   const payment = await paymentCollection.find().toArray();
+    //   res.send(payment);
+    // });
 
     await client.db("admin").command({ ping: 1 });
 
