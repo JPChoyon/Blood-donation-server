@@ -6,6 +6,14 @@ const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
+const { Server } = require("socket.io");
+
+const io = new Server({ 
+  cors{
+    origin: 
+      "http://localhost:3000",
+  }
+ });
 
 // middleware
 app.use(
@@ -42,16 +50,23 @@ async function run() {
 
 
     /*==================== Socket.IO setup ============================*/
-    const server = http.createServer(app);
-    const io = socketIO(server);
+    // const server = http.createServer(app);
+    // const io = socketIO(server);
 
-    io.on("connection", (socketIO) => {
-      console.log("socket connection..");
+    // io.on("connection", (socketIO) => {
+    //   console.log("socket connection..");
 
-      socketIO.on('disconnect', () =>{
-        console.log(' socket disconnect');
-      })
+    //   socketIO.on('disconnect', () =>{
+    //     console.log(' socket disconnect');
+    //   })
+    // });
+   
+
+    io.on("connection", (socket) => {
+      // ...
     });
+
+    io.listen(3000);
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
