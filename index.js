@@ -33,8 +33,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
+    const donnetedCollection = client
+      .db("bloodDonation")
+      .collection("donneted");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
+    const donetedCollection = client.db("bloodDonation").collection("doneted");
     const commentCollection = client.db("bloodDonation").collection("comments");
     const campaignCollection = client
       .db("bloodDonation")
@@ -70,6 +74,12 @@ async function run() {
     });
 
     /*  single user */
+
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+
     // app.get("/users/:email", async (req, res) => {
     //   const email = req.query.email;
     //   const result = await userCollection.findOne({ email: email });
@@ -136,6 +146,24 @@ async function run() {
 
     app.get("/requests", async (req, res) => {
       const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.put("/requests/:_id", async (req, res) => {
+      const id = req.params._id;
+      const user = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: {
+          status: "processing",
+        },
+      };
+      const result = await requestCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
       res.send(result);
     });
 
@@ -239,6 +267,33 @@ async function run() {
       res.send(campaign);
     });
 
+
+    /*================== Doneted related api ++++++++++++++++++++++++++++++++*/
+
+    /* donete post */
+    app.post("/doneted", async (req, res) => {
+      const doneted = req.body;
+      const result = await donetedCollection.insertOne(doneted);
+      res.send(result);
+    });
+
+    /* donete get */
+    app.get("/doneted", async (req, res) => {
+      const doneted = await donnetedCollection.find().toArray();
+      res.send(doneted);
+    });
+
+    /* donete delete */
+    app.delete("/doneted/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await donnetedCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/campaign/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id, "jhsdfhsdfhsuifh");
     app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
       const cursor = { _id: new ObjectId(id) };
