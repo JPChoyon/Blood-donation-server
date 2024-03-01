@@ -33,13 +33,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
-    const donnetedCollection = client
-      .db("bloodDonation")
-      .collection("donneted");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
-    const donetedCollection = client.db("bloodDonation").collection("doneted");
     const commentCollection = client.db("bloodDonation").collection("comments");
+    const likesCollection = client.db("bloodDonation").collection("likes");
     const campaignCollection = client
       .db("bloodDonation")
       .collection("campaign");
@@ -75,7 +72,7 @@ async function run() {
 
     /*  single user */
     app.get("/users/:email", async (req, res) => {
-      const email = req.params.email;
+      const email = req.query.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
@@ -113,7 +110,7 @@ async function run() {
 
     app.delete("/user-all", async (req, res) => {
       try {
-        const result = await userCollection.deleteMany({});
+        const result = await commentCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -137,24 +134,6 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/requests/:_id", async (req, res) => {
-      const id = req.params._id;
-      const user = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updateUser = {
-        $set: {
-          status: "processing",
-        },
-      };
-      const result = await requestCollection.updateOne(
-        filter,
-        updateUser,
-        options
-      );
-      res.send(result);
-    });
-
     /*  delete request from database */
     app.delete("/requests/:id", async (req, res) => {
       const id = req.params.id;
@@ -166,7 +145,7 @@ async function run() {
     /* delete all requests from database */
     app.delete("/requests-all", async (req, res) => {
       try {
-        const result = await requestCollection.deleteMany({});
+        const result = await likesCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -238,6 +217,39 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    /*==================== likes related api ============================*/
+    app.post("/likes", async (req, res) => {
+      const likes = req.body;
+      const result = await likesCollection.insertOne(likes);
+      res.send(result);
+    });
+
+    app.get("/likes", async (req, res) => {
+      const likes = await likesCollection.find().toArray();
+      res.send(likes);
+    });
+
+    // app.get("/likes/:likerEmail", async (req, res) => {
+    //   const likerEmail = req.params.likerEmail;
+    //   const cursor = likesCollection.find({ likerEmail: likerEmail });
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+    app.get("/likes/:postsID", async (req, res) => {
+      const postsID = req.params.postsID;
+      const cursor = likesCollection.find({ postsID: postsID });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+     app.delete("/likes/:likerEmail", async (req, res) => {
+       const likerEmail = req.params.likerEmail;
+       const query = { likerEmail: likerEmail };
+       const result = await likesCollection.deleteOne(query);
+       res.send(result);
+     });
 
     /*================== campaign related api ++++++++++++++++++++++++++++++++*/
 
