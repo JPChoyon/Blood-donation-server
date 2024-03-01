@@ -2,18 +2,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
-const socketIO = require("socket.io");
+// const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-const { Server } = require("socket.io");
-
-const io = new Server({ 
-  cors{
-    origin: 
-      "http://localhost:3000",
-  }
- });
+// const { Server } = require("socket.io");
 
 // middleware
 app.use(
@@ -62,11 +55,11 @@ async function run() {
     // });
    
 
-    io.on("connection", (socket) => {
-      // ...
-    });
+    // io.on("connection", (socket) => {
+    //   // ...
+    // });
 
-    io.listen(3000);
+    // io.listen(3000);
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -87,7 +80,7 @@ async function run() {
 
     /*  single user */
     app.get("/users/:email", async (req, res) => {
-      const email = req.query.email;
+      const email = req.params.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
