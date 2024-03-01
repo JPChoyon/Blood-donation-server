@@ -74,10 +74,22 @@ async function run() {
     });
 
     /*  single user */
+
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
+
+    // app.get("/users/:email", async (req, res) => {
+    //   const email = req.query.email;
+    //   const result = await userCollection.findOne({ email: email });
+    //   res.send(result);
+    // });
+
+    app.get("/posts/:email", async (req, res) => {
+      const email = req.query.email;
+      const cursor = await postCollection.findOne({ email: email });
+      res.send(cursor);
     });
 
     // user update api
@@ -248,9 +260,13 @@ async function run() {
     });
 
     app.get("/campaign", async (req, res) => {
-      const campaign = await campaignCollection.find().toArray();
+      const campaign = await campaignCollection
+        .find()
+        .sort({ currentDate: -1, start: -1})
+        .toArray();
       res.send(campaign);
     });
+
 
     /*================== Doneted related api ++++++++++++++++++++++++++++++++*/
 
@@ -278,6 +294,8 @@ async function run() {
     app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id, "jhsdfhsdfhsuifh");
+    app.get("/campaign/:id", async (req, res) => {
+      const id = req.params.id;
       const cursor = { _id: new ObjectId(id) };
       const result = await campaignCollection.findOne(cursor);
       res.send(result);
