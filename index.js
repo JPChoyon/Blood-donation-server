@@ -33,6 +33,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
+    const donnetedCollection = client
+      .db("bloodDonation")
+      .collection("donneted");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
@@ -47,11 +50,9 @@ async function run() {
     io.on("connection", (socketIO) => {
       console.log("socket connection..");
 
-
-
-      socketIO.on('disconnect', () =>{
-        console.log(' socket disconnect');
-      })
+      socketIO.on("disconnect", () => {
+        console.log(" socket disconnect");
+      });
     });
 
     /*==================== user related api ============================*/
@@ -78,7 +79,7 @@ async function run() {
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
-    
+
     // user update api
     app.put("/users/:_id", async (req, res) => {
       const id = req.params._id;
@@ -231,6 +232,38 @@ async function run() {
     app.get("/campaign", async (req, res) => {
       const campaign = await campaignCollection.find().toArray();
       res.send(campaign);
+    });
+
+    /*================== Doneted related api ++++++++++++++++++++++++++++++++*/
+
+    /* donete post */
+    app.post("/doneted", async (req, res) => {
+      const team = req.body;
+      const { userId } = team;
+      const query = { _id: new ObjectId(userId) };
+      const result = await donnetedCollection.insertOne(team);
+      const updateStatus = {
+        $set: {
+          status: "processing",
+        },
+      };
+      await requestCollection.updateOne(query, updateStatus);
+      res.send(result);
+      ``;
+    });
+
+    /* donete get */
+    app.get("/doneted", async (req, res) => {
+      const doneted = await donnetedCollection.find().toArray();
+      res.send(doneted);
+    });
+
+    /* donete delete */
+    app.delete("/doneted/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await donnetedCollection.deleteOne(query);
+      res.send(result);
     });
 
     /*==================== Socket server ============================*/
