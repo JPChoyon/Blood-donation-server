@@ -38,6 +38,7 @@ async function run() {
       .collection("donneted");
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
+    const donetedCollection = client.db("bloodDonation").collection("doneted");
     const commentCollection = client.db("bloodDonation").collection("comments");
     const campaignCollection = client
       .db("bloodDonation")
@@ -54,7 +55,6 @@ async function run() {
         console.log(" socket disconnect");
       });
     });
-
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -134,6 +134,24 @@ async function run() {
 
     app.get("/requests", async (req, res) => {
       const result = await requestCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.put("/requests/:_id", async (req, res) => {
+      const id = req.params._id;
+      const user = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateUser = {
+        $set: {
+          status: "processing",
+        },
+      };
+      const result = await requestCollection.updateOne(
+        filter,
+        updateUser,
+        options
+      );
       res.send(result);
     });
 
@@ -238,18 +256,9 @@ async function run() {
 
     /* donete post */
     app.post("/doneted", async (req, res) => {
-      const team = req.body;
-      const { userId } = team;
-      const query = { _id: new ObjectId(userId) };
-      const result = await donnetedCollection.insertOne(team);
-      const updateStatus = {
-        $set: {
-          status: "processing",
-        },
-      };
-      await requestCollection.updateOne(query, updateStatus);
+      const doneted = req.body;
+      const result = await donetedCollection.insertOne(doneted);
       res.send(result);
-      ``;
     });
 
     /* donete get */
@@ -266,9 +275,12 @@ async function run() {
       res.send(result);
     });
 
-    /*==================== Socket server ============================*/
-    io.on("connection", (socket) => {
-      console.log("socket connection..");
+    app.get("/campaign/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id, "jhsdfhsdfhsuifh");
+      const cursor = { _id: new ObjectId(id) };
+      const result = await campaignCollection.findOne(cursor);
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
