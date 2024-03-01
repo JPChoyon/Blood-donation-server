@@ -36,10 +36,10 @@ async function run() {
     const postCollection = client.db("bloodDonation").collection("posts");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
+    const likesCollection = client.db("bloodDonation").collection("likes");
     const campaignCollection = client
       .db("bloodDonation")
       .collection("campaign");
-
 
     /*==================== Socket.IO setup ============================*/
     const server = http.createServer(app);
@@ -48,9 +48,9 @@ async function run() {
     io.on("connection", (socketIO) => {
       console.log("socket connection..");
 
-      socketIO.on('disconnect', () =>{
-        console.log(' socket disconnect');
-      })
+      socketIO.on("disconnect", () => {
+        console.log(" socket disconnect");
+      });
     });
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
@@ -110,7 +110,7 @@ async function run() {
 
     app.delete("/user-all", async (req, res) => {
       try {
-        const result = await userCollection.deleteMany({});
+        const result = await commentCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -145,7 +145,7 @@ async function run() {
     /* delete all requests from database */
     app.delete("/requests-all", async (req, res) => {
       try {
-        const result = await requestCollection.deleteMany({});
+        const result = await likesCollection.deleteMany({});
         res.send(result);
       } catch (error) {
         console.error("Error deleting requests:", error);
@@ -218,6 +218,39 @@ async function run() {
       res.send(result);
     });
 
+    /*==================== likes related api ============================*/
+    app.post("/likes", async (req, res) => {
+      const likes = req.body;
+      const result = await likesCollection.insertOne(likes);
+      res.send(result);
+    });
+
+    app.get("/likes", async (req, res) => {
+      const likes = await likesCollection.find().toArray();
+      res.send(likes);
+    });
+
+    // app.get("/likes/:likerEmail", async (req, res) => {
+    //   const likerEmail = req.params.likerEmail;
+    //   const cursor = likesCollection.find({ likerEmail: likerEmail });
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
+    app.get("/likes/:postsID", async (req, res) => {
+      const postsID = req.params.postsID;
+      const cursor = likesCollection.find({ postsID: postsID });
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+     app.delete("/likes/:likerEmail", async (req, res) => {
+       const likerEmail = req.params.likerEmail;
+       const query = { likerEmail: likerEmail };
+       const result = await likesCollection.deleteOne(query);
+       res.send(result);
+     });
+
     /*================== campaign related api ++++++++++++++++++++++++++++++++*/
 
     app.post("/campaign", async (req, res) => {
@@ -231,16 +264,12 @@ async function run() {
       res.send(campaign);
     });
 
-
- 
-
     app.get("/campaign/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id, "jhsdfhsdfhsuifh")
+      console.log(id, "jhsdfhsdfhsuifh");
       const cursor = { _id: new ObjectId(id) };
       const result = await campaignCollection.findOne(cursor);
       res.send(result);
-
     });
 
     await client.db("admin").command({ ping: 1 });
