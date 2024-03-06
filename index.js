@@ -35,6 +35,7 @@ async function run() {
   try {
     const userCollection = client.db("bloodDonation").collection("users");
     const postCollection = client.db("bloodDonation").collection("posts");
+    const donetedCollection = client.db("bloodDonation").collection("doneted");
     const requestCollection = client.db("bloodDonation").collection("request");
     const commentCollection = client.db("bloodDonation").collection("comments");
     const likesCollection = client.db("bloodDonation").collection("likes");
@@ -252,12 +253,12 @@ async function run() {
       res.send(result);
     });
 
-     app.delete("/likes/:likerEmail", async (req, res) => {
-       const likerEmail = req.params.likerEmail;
-       const query = { likerEmail: likerEmail };
-       const result = await likesCollection.deleteOne(query);
-       res.send(result);
-     });
+    app.delete("/likes/:likerEmail", async (req, res) => {
+      const likerEmail = req.params.likerEmail;
+      const query = { likerEmail: likerEmail };
+      const result = await likesCollection.deleteOne(query);
+      res.send(result);
+    });
 
     /*================== campaign related api ++++++++++++++++++++++++++++++++*/
 
@@ -270,6 +271,43 @@ async function run() {
     app.get("/campaign", async (req, res) => {
       const campaign = await campaignCollection.find().toArray();
       res.send(campaign);
+    });
+
+    /*================== Doneted related api ++++++++++++++++++++++++++++++++*/
+
+    /* donete post */
+    app.post("/doneted", async (req, res) => {
+      const team = req.body;
+      const { userId } = team;
+      const query = { _id: new ObjectId(userId) };
+      const result = await donetedCollection.insertOne(team);
+      const updateduser = {
+        $set: {
+          status: "processing",
+        },
+      };
+      await requestCollection.updateOne(query, updateduser);
+      res.send(result);
+    });
+
+    // app.post("/doneted", async (req, res) => {
+    //   const reqInfo = req.body;
+    //   const result = await donetedCollection.insertOne(reqInfo);
+    //   res.send(result);
+    // });
+
+    /* donete get */
+    app.get("/doneted", async (req, res) => {
+      const doneted = await donetedCollection.find().toArray();
+      res.send(doneted);
+    });
+
+    /* donete delete */
+    app.delete("/doneted/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await donetedCollection.deleteOne(query);
+      res.send(result);
     });
 
     app.get("/campaign/:id", async (req, res) => {
