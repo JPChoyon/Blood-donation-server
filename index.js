@@ -1,12 +1,9 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const http = require("http");
-// const socketIO = require("socket.io");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-// const { Server } = require("socket.io");
 
 // middleware
 app.use(
@@ -42,25 +39,7 @@ async function run() {
     const campaignCollection = client
       .db("bloodDonation")
       .collection("campaign");
-
-    /*==================== Socket.IO setup ============================*/
-    // const server = http.createServer(app);
-    // const io = socketIO(server);
-
-    // io.on("connection", (socketIO) => {
-    //   console.log("socket connection..");
-
-    //   socketIO.on('disconnect', () =>{
-    //     console.log(' socket disconnect');
-    //   })
-    // });
-   
-
-    // io.on("connection", (socket) => {
-    //   // ...
-    // });
-
-    // io.listen(3000);
+    
     /*==================== user related api ============================*/
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -239,13 +218,6 @@ async function run() {
       res.send(likes);
     });
 
-    // app.get("/likes/:likerEmail", async (req, res) => {
-    //   const likerEmail = req.params.likerEmail;
-    //   const cursor = likesCollection.find({ likerEmail: likerEmail });
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // });
-
     app.get("/likes/:postsID", async (req, res) => {
       const postsID = req.params.postsID;
       const cursor = likesCollection.find({ postsID: postsID });
@@ -290,11 +262,7 @@ async function run() {
       res.send(result);
     });
 
-    // app.post("/doneted", async (req, res) => {
-    //   const reqInfo = req.body;
-    //   const result = await donetedCollection.insertOne(reqInfo);
-    //   res.send(result);
-    // });
+    
 
     /* donete get */
     app.get("/doneted", async (req, res) => {
